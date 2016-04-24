@@ -5,6 +5,8 @@
 #define TRAIN_MAX_SIZE 65536
 #define THETA_MAX_SIZE 2048
 
+#define MIN_POSITIVE_NUM 0.00000001
+
 int debug = 1;
 
 double x[TRAIN_MAX_SIZE][THETA_MAX_SIZE];
@@ -63,7 +65,8 @@ void train_LR_stoc(int iter_cnt, double alpha, int theta_cnt, int train_data_siz
             gradient[j] += deltas[j] * deltas[j];
         }
         for (j = 0; j < theta_cnt; j++) {
-            theta[j] -= alpha * deltas[j] / sqrt(gradient[j]);
+            if (gradient[j] > MIN_POSITIVE_NUM)
+                theta[j] -= alpha * deltas[j] / sqrt(gradient[j]);
         }
         if (debug) {
             printf("%lf\n", j_of_theta(train_data_size, theta_cnt));
@@ -74,9 +77,9 @@ void train_LR_stoc(int iter_cnt, double alpha, int theta_cnt, int train_data_siz
 int main() {
     int i;
     double h_theta;
-    debug = 0;
+    /* debug = 0; */
     load_train_data("train_data", 3);
-    train_LR_stoc(100000, 1, 3, train_data_size, 10);
+    train_LR_stoc(1000000, 1, 3, train_data_size, 10);
     save_theta_data("theta_data", 3);
     printf("%lf %lf %lf\n", theta[0], theta[1], theta[2]);
     for (i = 0; i < train_data_size; i++) {
