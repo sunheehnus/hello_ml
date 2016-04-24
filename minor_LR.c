@@ -2,14 +2,17 @@
 #include<stdlib.h>
 #include<math.h>
 
+#define TRAIN_MAX_SIZE 65536
+#define THETA_MAX_SIZE 2048
+
 int debug = 1;
 
-double x[65536][2048];
-double y[65536];
-double theta[2048];
-double gradient[2048];
+double x[TRAIN_MAX_SIZE][THETA_MAX_SIZE];
+double y[TRAIN_MAX_SIZE];
+double theta[THETA_MAX_SIZE];
+double gradient[THETA_MAX_SIZE];
 int train_data_size;
-int samples_pos[65536];
+int samples_pos[TRAIN_MAX_SIZE];
 
 /* pick ceil elements */
 void init_pick(int ceil);
@@ -47,20 +50,20 @@ double j_of_theta(int train_data_size, int theta_cnt) {
 
 void train_LR_stoc(int iter_cnt, double alpha, int theta_cnt, int train_data_size, int sample_cnt) {
     int i, j;
-    double deltas[2048];
+    double deltas[THETA_MAX_SIZE];
     init_pick(train_data_size);
     while (iter_cnt--) {
         pick(samples_pos, sample_cnt, train_data_size);
-        for (i = 0; i < sample_cnt; i++) {
-            deltas[samples_pos[i]] = 0;
-            for (j = 0; j < train_data_size; j++) {
-                deltas[samples_pos[i]] += (sigmoid(vector_mul(x[j], theta, theta_cnt)) - y[j]) * x[j][samples_pos[i]];
+        for (j = 0; j < theta_cnt; j++) {
+            deltas[j] = 0;
+            for (i = 0; i < sample_cnt; i++) {
+                deltas[j] += (sigmoid(vector_mul(x[samples_pos[i]], theta, theta_cnt)) - y[samples_pos[i]]) * x[samples_pos[i]][j];
             }
-            deltas[samples_pos[i]] /= train_data_size;
-            gradient[samples_pos[i]] += deltas[samples_pos[i]] * deltas[samples_pos[i]];
+            deltas[j] /= train_data_size;
+            gradient[j] += deltas[j] * deltas[j];
         }
-        for (i = 0; i < sample_cnt; i++) {
-            theta[samples_pos[i]] -= alpha * deltas[samples_pos[i]] / sqrt(gradient[samples_pos[i]]);
+        for (j = 0; j < theta_cnt; j++) {
+            theta[j] -= alpha * deltas[j] / sqrt(gradient[j]);
         }
         if (debug) {
             printf("%lf\n", j_of_theta(train_data_size, theta_cnt));
@@ -73,7 +76,7 @@ int main() {
     double h_theta;
     debug = 0;
     load_train_data("train_data", 3);
-    train_LR_stoc(100000, 1, 3, train_data_size, 20);
+    train_LR_stoc(100000, 1, 3, train_data_size, 10);
     save_theta_data("theta_data", 3);
     printf("%lf %lf %lf\n", theta[0], theta[1], theta[2]);
     for (i = 0; i < train_data_size; i++) {
