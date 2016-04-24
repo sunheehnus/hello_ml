@@ -5,6 +5,7 @@
 double x[65536][2048];
 double y[65536];
 double theta[2048];
+double gradient[2048];
 int train_data_size;
 
 double sigmoid(double x) {
@@ -40,10 +41,13 @@ void trainLogRegres(int iter_cnt, double alpha, int theta_cnt, int train_data_si
                 deltas[i] += (sigmoid(vector_mul(x[j], theta, theta_cnt)) - y[j]) * x[j][i];
             }
             deltas[i] /= train_data_size;
+            gradient[i] += deltas[i] * deltas[i];
         }
         for (i = 0; i < theta_cnt; i++) {
-            theta[i] -= alpha * deltas[i];
+            theta[i] -= alpha * deltas[i] / sqrt(gradient[i]);
         }
+        /* printf("%lf\n", loss(train_data_size)); */
+        printf("%lf\n", j_of_theta(train_data_size));
     }
 }
 
@@ -84,7 +88,7 @@ int main() {
     int i;
     double h_theta;
     load_train_data("train_data", 3);
-    trainLogRegres(100000, 1, 3, train_data_size);
+    trainLogRegres(100000, 10, 3, train_data_size);
     save_theta_data("theta_data", 3);
     printf("%lf %lf %lf\n", theta[0], theta[1], theta[2]);
     for (i = 0; i < train_data_size; i++) {
